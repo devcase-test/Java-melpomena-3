@@ -1,0 +1,65 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id "org.sonarqube" version "3.0"
+}
+
+// DO NOT MODIFY THESE VALUES
+group 'org.sytac.test'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'org.sytac.test.Application'
+        )
+    }
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "${System.getenv("CI_PROJECT_TITLE")}"
+        property "sonar.organization", "nicole-bilic"
+    }
+}
+
+// YOU CAN ADD DEPENDENCIES HERE
+dependencies {
+
+    // https://mvnrepository.com/artifact/com.google.auto.service/auto-service
+    annotationProcessor 'com.google.auto.service:auto-service:1.0-rc7'
+    compile group: 'com.google.auto.service', name: 'auto-service', version: '1.0-rc7'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+}
+
+// **************************
+// DO NOT MODIFY THIS SECTION
+// **************************
+publishing {
+    publications {
+        library(MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url "https://gitlab.com/api/v4/projects/${System.getenv("CI_PROJECT_ID")}/packages/maven"
+            credentials(HttpHeaderCredentials) {
+                name = 'Job-Token'
+                value = System.getenv("CI_JOB_TOKEN")
+            }
+            authentication {
+                header(HttpHeaderAuthentication)
+            }
+        }
+    }
+}
